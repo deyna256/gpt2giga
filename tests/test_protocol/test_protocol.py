@@ -1504,6 +1504,7 @@ def test_response_processor_stream_tool_calls_include_index():
 
 def test_usage_counts_precached_prompt_tokens_as_input():
     """GigaChat's prompt_tokens leaves out the cached part; OpenAI's includes it."""
+    from gpt2giga.protocols.anthropic.response_adapter import _usage_to_anthropic
     from gpt2giga.providers.gigachat.adapter import _usage_to_normalized
 
     usage = {
@@ -1521,3 +1522,8 @@ def test_usage_counts_precached_prompt_tokens_as_input():
     assert responses["input_tokens_details"]["cached_tokens"] == 2957
     normalized = _usage_to_normalized(usage)
     assert (normalized.input_tokens, normalized.total_tokens) == (3056, 3066)
+    assert _usage_to_anthropic(normalized) == {
+        "input_tokens": 99,
+        "output_tokens": 10,
+        "cache_read_input_tokens": 2957,
+    }

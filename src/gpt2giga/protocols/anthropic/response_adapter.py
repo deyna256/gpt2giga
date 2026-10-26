@@ -158,9 +158,14 @@ def _stop_reason(
 
 
 def _usage_to_anthropic(usage: NormalizedUsage | None) -> dict[str, int]:
+    if usage is None:
+        return {"input_tokens": 0, "output_tokens": 0}
+    # Normalized input counts the cached tokens in; Anthropic's leaves them out.
+    cached = int(usage.raw_extensions.get("precached_prompt_tokens") or 0)
     return {
-        "input_tokens": int(usage.input_tokens or 0) if usage else 0,
-        "output_tokens": int(usage.output_tokens or 0) if usage else 0,
+        "input_tokens": max(0, int(usage.input_tokens or 0) - cached),
+        "output_tokens": int(usage.output_tokens or 0),
+        **({"cache_read_input_tokens": cached} if cached else {}),
     }
 
 
