@@ -1500,3 +1500,24 @@ def test_response_processor_stream_tool_calls_include_index():
     assert len(tool_calls) == 1
     assert "index" in tool_calls[0], "streaming tool_calls must include 'index' field"
     assert tool_calls[0]["index"] == 0
+
+
+def test_usage_counts_precached_prompt_tokens_as_input():
+    """GigaChat's prompt_tokens leaves out the cached part; OpenAI's includes it."""
+    from gpt2giga.providers.gigachat.adapter import _usage_to_normalized
+
+    usage = {
+        "prompt_tokens": 99,
+        "completion_tokens": 10,
+        "total_tokens": 109,
+        "precached_prompt_tokens": 2957,
+    }
+    chat = ResponseProcessor._build_usage(usage)
+    assert chat["prompt_tokens"] == 3056
+    assert chat["total_tokens"] == 3066
+    assert chat["prompt_tokens_details"]["cached_tokens"] == 2957
+    responses = ResponseProcessor._build_response_usage(usage)
+    assert responses["input_tokens"] == 3056
+    assert responses["input_tokens_details"]["cached_tokens"] == 2957
+    normalized = _usage_to_normalized(usage)
+    assert (normalized.input_tokens, normalized.total_tokens) == (3056, 3066)

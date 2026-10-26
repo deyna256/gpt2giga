@@ -777,9 +777,15 @@ def _usage_to_normalized(value: Any) -> NormalizedUsage | None:
     input_tokens = value.get("prompt_tokens", value.get("input_tokens"))
     output_tokens = value.get("completion_tokens", value.get("output_tokens"))
     return NormalizedUsage(
-        input_tokens=input_tokens,
+        input_tokens=(input_tokens + (value.get("precached_prompt_tokens") or 0))
+        if input_tokens is not None
+        else None,
         output_tokens=output_tokens,
-        total_tokens=value.get("total_tokens"),
+        total_tokens=(
+            value["total_tokens"] + (value.get("precached_prompt_tokens") or 0)
+        )
+        if value.get("total_tokens") is not None
+        else None,
         raw_extensions={
             key: item
             for key, item in value.items()

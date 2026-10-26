@@ -1080,9 +1080,11 @@ class ResponseProcessor:
             return None
 
         return {
-            "prompt_tokens": usage_data["prompt_tokens"],
+            "prompt_tokens": usage_data["prompt_tokens"]
+            + (usage_data.get("precached_prompt_tokens") or 0),
             "completion_tokens": usage_data["completion_tokens"],
-            "total_tokens": usage_data["total_tokens"],
+            "total_tokens": usage_data["total_tokens"]
+            + (usage_data.get("precached_prompt_tokens") or 0),
             "prompt_tokens_details": {
                 "cached_tokens": usage_data.get("precached_prompt_tokens", 0)
             },
@@ -1094,14 +1096,16 @@ class ResponseProcessor:
         if not usage_data:
             return None
         return {
-            "input_tokens": usage_data.get("prompt_tokens", 0),
+            "input_tokens": usage_data.get("prompt_tokens", 0)
+            + (usage_data.get("precached_prompt_tokens") or 0),
             "output_tokens": usage_data.get("completion_tokens", 0),
-            "total_tokens": usage_data["total_tokens"],
+            "total_tokens": usage_data["total_tokens"]
+            + (usage_data.get("precached_prompt_tokens") or 0),
             "prompt_tokens_details": {
                 "cached_tokens": usage_data.get("precached_prompt_tokens", 0)
             },
             "input_tokens_details": {
-                "cached_tokens": 0,
+                "cached_tokens": usage_data.get("precached_prompt_tokens") or 0,
                 "cache_write_tokens": 0,
             },
             "output_tokens_details": {"reasoning_tokens": 0},
